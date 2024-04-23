@@ -40,7 +40,7 @@ w_mepc(uint64 x)
 
 // Supervisor Status Register, sstatus
 
-#define SSTATUS_SPP (1L << 8)  // Previous mode, 1=Supervisor, 0=User
+#define SSTATUS_SPP (1L << 8)  // Previous mode, 1=Supervisor, 0=User // 上一个模式是什么，1表示supervisor模式，0表示用户模式
 #define SSTATUS_SPIE (1L << 5) // Supervisor Previous Interrupt Enable
 #define SSTATUS_UPIE (1L << 4) // User Previous Interrupt Enable
 #define SSTATUS_SIE (1L << 1)  // Supervisor Interrupt Enable
@@ -308,6 +308,14 @@ r_ra()
 {
   uint64 x;
   asm volatile("mv %0, ra" : "=r" (x) );
+  return x;
+}
+
+static inline uint64
+r_fp()
+{
+  uint64 x;
+  asm volatile("mv %0, s0" : "=r" (x) );
   return x;
 }
 

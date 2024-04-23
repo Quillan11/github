@@ -113,6 +113,12 @@ found:
     return 0;
   }
 
+    // Allocate a trapframe page for the handler.
+  if((p->handlertrapframe = (struct trapframe *)kalloc()) == 0){
+    release(&p->lock);
+    return 0;
+  }
+
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -127,6 +133,11 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  p->interval = 0;
+  p->handler = 0;
+  p->spend = 1;
+  p->waiting = 1;
+
   return p;
 }
 
@@ -138,6 +149,8 @@ freeproc(struct proc *p)
 {
   if(p->trapframe)
     kfree((void*)p->trapframe);
+  if(p->handlertrapframe)
+    kfree((void*)p->handlertrapframe);
   p->trapframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
@@ -696,4 +709,44 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+void switchtrapframe(struct trapframe * origin, struct trapframe * handler)
+{
+  handler->kernel_satp = origin->kernel_satp;
+  handler->kernel_sp = origin->kernel_sp;
+  handler->kernel_trap = origin->kernel_trap;
+  handler->kernel_hartid = origin->kernel_hartid;
+  handler->epc = origin->epc;
+  handler->ra = origin->ra;
+  handler->sp = origin->sp;
+  handler->gp = origin->gp;
+  handler->tp = origin->tp;
+  handler->t0 = origin->t0;
+  handler->t1 = origin->t1;
+  handler->t2 = origin->t2;
+  handler->s0 = origin->s0;
+  handler->s1 = origin->s1;
+  handler->a0 = origin->a0;
+  handler->a1 = origin->a1;
+  handler->a2 = origin->a2;
+  handler->a3 = origin->a3;
+  handler->a4 = origin->a4;
+  handler->a5 = origin->a5;
+  handler->a6 = origin->a6;
+  handler->a7 = origin->a7;
+  handler->s2 = origin->s2;
+  handler->s3 = origin->s3;
+  handler->s4 = origin->s4;
+  handler->s5 = origin->s5;
+  handler->s6 = origin->s6;
+  handler->s7 = origin->s7;
+  handler->s8 = origin->s8;
+  handler->s9 = origin->s9;
+  handler->s10 = origin->s10;
+  handler->s11 = origin->s11;
+  handler->t3 = origin->t3;
+  handler->t4 = origin->t4;
+  handler->t5 = origin->t5;
+  handler->t6 = origin->t6;
 }

@@ -104,6 +104,8 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
+extern uint64 sys_sigalarm(void);
+extern uint64 sys_sigreturn(void);
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -127,17 +129,31 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_sigalarm] sys_sigalarm,
+[SYS_sigreturn] sys_sigreturn,
 };
 
 void
 syscall(void)
 {
   int num;
+
+  // 获取当前进程
   struct proc *p = myproc();
 
+
+  // 早在Phase 1，我们就将对应的系统调用号通过汇编语言加载到了对应的寄存器中
+  // 现在它终于重见天日了...
   num = p->trapframe->a7;
+
+    // 判断系统调用号的合法性
+  // 如果合法，则调用对应的内核功能函数，返回值放入trapframe中的a0
+  // 这个值将会在userret汇编代码中恢复给用户态的a0寄存器
+
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     p->trapframe->a0 = syscalls[num]();
+
+    // 否则打印错误原因，返回值置为-1
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);
