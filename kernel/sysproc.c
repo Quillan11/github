@@ -41,14 +41,37 @@ sys_wait(void)
 uint64
 sys_sbrk(void)
 {
-  int addr;
+  
   int n;
-
+  struct proc * p = myproc();
   if(argint(0, &n) < 0)
     return -1;
-  addr = myproc()->sz;
-  if(growproc(n) < 0)
-    return -1;
+  uint64 addr = p->sz;
+  uint64 newsize = addr + n;
+  // if(growproc(n) < 0)
+  //   return -1;
+  if (newsize >= MAXVA){
+    return addr;
+  }
+  if (n < 0) 
+  {
+    if (newsize > addr)
+    {
+      newsize = 0;
+      uvmunmap(p->pagetable, 0, PGROUNDUP(addr) / PGSIZE, 1);
+      
+      // p->sz = 0;
+    }
+    else
+    {
+      uvmunmap(p->pagetable, PGROUNDUP(newsize), (PGROUNDUP(addr) - PGROUNDUP(newsize)) / PGSIZE, 1);
+      // vmprint(p->pagetable);
+      // if (p->sz > MAXVA)
+      //   panic("sbrk: p->sz is too large");
+    }
+  }
+  p->sz = newsize;
+
   return addr;
 }
 

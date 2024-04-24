@@ -2225,16 +2225,20 @@ sbrkarg(char *s)
   int fd, n;
 
   a = sbrk(PGSIZE);
+  printf(" 2222\n");
   fd = open("sbrk", O_CREATE|O_WRONLY);
   unlink("sbrk");
+ 
   if(fd < 0)  {
     printf("%s: open sbrk failed\n", s);
     exit(1);
   }
+  printf(" 2222\n");
   if ((n = write(fd, a, PGSIZE)) < 0) {
     printf("%s: write sbrk failed\n", s);
     exit(1);
   }
+  printf(" 2222\n");
   close(fd);
 
   // test writes to allocated memory
@@ -2373,6 +2377,7 @@ void argptest(char *s)
     printf("%s: open failed\n", s);
     exit(1);
   }
+  printf("open succeeded\n");
   read(fd, sbrk(0) - 1, -1);
   close(fd);
 }
