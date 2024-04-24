@@ -189,6 +189,7 @@ consoleinit(void)
 
   // connect read and write system calls
   // to consoleread and consolewrite.
+  // 将读写系统调用连接到consoleread和consolewrite
   devsw[CONSOLE].read = consoleread;
   devsw[CONSOLE].write = consolewrite;
 }

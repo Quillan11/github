@@ -53,6 +53,14 @@ void
 uartinit(void)
 {
   // disable interrupts.
+    // 译：关闭中断
+  // IER寄存器控制着芯片上所有的中断的使能
+  // 这一步相当于关闭了所有UART可能发出的中断
+  // IER bit0: 管理receiver ready register中断
+  // IER bit1: 管理transmitter empty register中断
+  // IER bit2: 管理receiver line status register中断
+  // IER bit3: 管理modem status register中断
+  // IER bit4-7: 硬连线为0
   WriteReg(IER, 0x00);
 
   // special mode to set baud rate.
